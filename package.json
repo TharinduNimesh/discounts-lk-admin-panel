@@ -7,14 +7,18 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "supabase:generate": "npx supabase gen types --lang=typescript --project-id taqpcmjeodzbezvfxgzh --schema public > ./types/database.types.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.46.1",
     "chart.js": "^4.4.5",
     "nuxt": "^3.13.2",
     "pinia": "^2.2.4",
+    "supabase": "^1.207.9",
     "vue": "latest",
-    "vue-router": "latest"
+    "vue-router": "latest",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@nuxt/ui": "^2.18.7",
