@@ -1,29 +1,96 @@
-<script >
+<script setup lang="ts">
 
-import UsersByCityChart from "~/components/Chart/UsersByCityChart.vue";
 
-export default {
-  components: {
-    UsersByCityChart
+const totalUsersColumns = [
+  {
+    key: "id",
+    label: "#",
   },
-  data() {
-    return {
-      usersByCity: {
-        Colombo: 20,
-        Gampaha: 15,
-        Kandy: 8,
-        Kurunegala: 5,
-        Jaffna: 1
-      }
-    };
-  }
-};
+  {
+    key: "location",
+    label: "Location",
+  },
+  {
+    key: "users",
+    label: "User Count",
+  },
+];
 
+const totalUsersData = [
+  {
+    id: 1,
+    location: "Colombo",
+    users: "50",
+  },
+  {
+    id: 2,
+    location: "Gampaha",
+    users: "21",
+  },
+  {
+    id: 3,
+    location: "Ja-Ela",
+    users: "10",
+  },
+  {
+    id: 4,
+    location: "Kandy",
+    users: "5",
+  },
+  {
+    id: 5,
+    location: "Kalutara",
+    users: "5",
+  },
+];
+
+const totalShopColumns = [
+  {
+    key: "id",
+    label: "#",
+  },
+  {
+    key: "name",
+    label: "Shop Name",
+  },
+  {
+    key: "branches",
+    label: "Branches Count",
+  },
+];
+
+const totalShopData = [
+  {
+    id: 1,
+    name: "Pizza Hut",
+    branches: "21",
+  },
+  {
+    id: 2,
+    name: "Dominos",
+    branches: "12",
+  },
+  {
+    id: 3,
+    name: "Thilakawardane",
+    branches: "10",
+  },
+  {
+    id: 4,
+    name: "Fashion Bug",
+    branches: "4",
+  },
+  {
+    id: 5,
+    name: "Buerger King",
+    branches: "3",
+  },
+];
 </script>
 <template>
   <NuxtLayout name="app">
     <UContent>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
 
         <div
           class="flex flex-col items-center p-5 rounded-lg bg-gray-200/30 dark:bg-gray-900/30 border border-primary/10">
@@ -69,10 +136,9 @@ export default {
     </UContent>
 
     <UContent>
+      <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
 
-      <div class="grid grid-cols-5 sm:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 gap-4">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3">
               <UContent>
                 <div class="flex flex-col gap-3">
                   <h3
@@ -85,8 +151,12 @@ export default {
               </UContent>
               <UContent>
                 <div class="flex flex-col gap-3">
-
-                  <UsersByCityChart :userData="usersByCity" />
+                  <h3
+                    class="text-lg uppercase text-gray-800 dark:text-gray-200 font-semibold"
+                  >
+                    Total Shops
+                  </h3>
+                  <UTable :columns="totalShopColumns" :rows="totalShopData" />
                 </div>
               </UContent>
 
