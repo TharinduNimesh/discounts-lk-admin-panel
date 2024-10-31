@@ -16,11 +16,11 @@ export default defineAppConfig({
         size: "lg",
       },
     },
-    selectMenu: {
+    select: {
       default: {
-        size: "lg",
         color: "gray",
-      },
+        size: "lg"
+      }
     },
     formGroup: {
       default: {

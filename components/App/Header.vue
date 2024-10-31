@@ -54,14 +54,14 @@ function toggleTheme() {
     <div class="flex items-center gap-5">
       <div class="text-2xl" @click="toggleTheme()">
         <UButton
-          v-show="$colorMode.preference === 'light'"
+          v-show="$colorMode.value === 'light'"
           icon="ic:round-light-mode"
           class="rounded-full"
           variant="ghost"
           color="gray"
         />
         <UButton
-          v-show="$colorMode.preference === 'dark'"
+          v-show="$colorMode.value === 'dark'"
           icon="ic:round-dark-mode"
           class="rounded-full"
           variant="ghost"

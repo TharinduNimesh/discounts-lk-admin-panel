@@ -29,7 +29,7 @@ const sidebarStore = useSidebarStore();
               class="flex flex-col justify-between items-center text-center lg:flex-row lg:text-left border border-secondary-bkg dark:border-slate-900 bg-secondary-bkg rounded-xl shadow dark:shadow-black p-6"
             >
               <p class="text-sm text-gray-500">
-                © 2024 <strong>THINK DIGITAL</strong>. All Rights Reserved.
+                © 2024 <strong>DIZCOUNT LK</strong>. All Rights Reserved.
               </p>
               <p class="text-sm text-gray-500">
                 Powered by
