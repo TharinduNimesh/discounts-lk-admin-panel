@@ -34,7 +34,7 @@ const branchesAddedColumns = [
   {
     key: "openingHours",
     label: "Opening Hours",
-  }
+  },
 ];
 
 const branchesAddedData = [
@@ -232,12 +232,12 @@ const storeSchema = computed(() =>
                 />
               </UFormGroup>
 
-              <UFormGroup label="Opening Hours" class="mt-6">
-                <UInput
-                  type="time"
-                  placeholder="08:00 - 18:00"
-                  icon="material-symbols-light:calendar-clock"
-                />
+              <UFormGroup
+                label="Opening Hours"
+                help="Use All 12:00 AM to Display 24 Hours Open"
+                class="mt-6"
+              >
+                <UTimeInput />
               </UFormGroup>
 
               <div class="flex justify-end mt-8 gap-3">
@@ -263,7 +263,7 @@ const storeSchema = computed(() =>
               <UDivider class="my-1" />
 
               <div
-                class="lg:h-[320px] bg-white dark:bg-zinc-900 border border-gray-300/70 dark:border-gray-700/60 rounded-lg mt-5 overflow-scroll"
+                class="lg:h-[350px] bg-white dark:bg-zinc-900 border border-gray-300/70 dark:border-gray-700/60 rounded-lg mt-5 overflow-scroll"
               >
                 <UTable
                   :columns="branchesAddedColumns"
