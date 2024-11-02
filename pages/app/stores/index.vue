@@ -1,17 +1,77 @@
 <script setup lang="ts">
-const productListAction = [
+interface Store {
+  id: number;
+  name: string;
+  contactName: string;
+  contactNumber: string;
+  branches: string;
+  category: string | undefined;
+  status: string;
+}
+
+const supabase = useSupabase();
+const stores = ref<Store[]>([]);
+const counts = ref({
+  totalStores: 0,
+  totalSponsoredStores: 0,
+});
+
+async function loadStores() {
+  const { data: storesResponse } = await supabase
+    .from("stores")
+    .select(
+      `id, name, contact_name, 
+      contact_number, branches(count), 
+      store_categories(name), 
+      sponsored_stores!left(store_id, ended_at)`
+    )
+    .filter("sponsored_stores.ended_at", "gt", new Date().toISOString());
+
+  if (storesResponse === null) {
+    return;
+  }
+
+  stores.value = storesResponse.map((store, index) => {
+    function getStatus(s: typeof store) {
+      if (s.sponsored_stores.length > 0) return "Sponsored";
+      if (s.branches[0].count === 0) return "Inactive";
+
+      return "Normal";
+    }
+    return {
+      id: store.id,
+      index: index + 1,
+      name: store.name,
+      contactName: store.contact_name,
+      contactNumber: store.contact_number,
+      branches: `${store.branches[0].count} Branches`,
+      category: store.store_categories?.name,
+      status: getStatus(store),
+    };
+  });
+
+  counts.value = {
+    totalStores: storesResponse.length,
+    totalSponsoredStores: storesResponse.filter(
+      (store) => store.sponsored_stores.length > 0
+    ).length,
+  };
+}
+await loadStores();
+
+const productListAction = (row: Store) => [
   [
     {
       label: "More Information",
       icon: "flowbite:info-circle-outline",
-      to: "/app/stores/1",
+      to: `/app/stores/${row.id}`,
     },
   ],
   [
     {
       label: "Edit",
       icon: "material-symbols:edit-square-outline-rounded",
-      to: "/app/stores/1?edit=true",
+      to: `/app/stores/${row.id}?edit=true`,
     },
     {
       label: "Remove",
@@ -22,7 +82,7 @@ const productListAction = [
 
 const totalShopColumns = [
   {
-    key: "id",
+    key: "index",
     label: "#",
   },
   {
@@ -47,54 +107,6 @@ const totalShopColumns = [
   },
 ];
 
-const totalShopData = [
-  {
-    id: 1,
-    name: "Pizza Hut",
-    contactName: "Sahan",
-    contactNumber: "011-1141144",
-    branches: "21",
-    category: "Restaurants",
-    status: "Sponsored",
-  },
-  {
-    id: 2,
-    name: "Dominos",
-    contactName: "Nihal",
-    contactNumber: "011-1141144",
-    branches: "12",
-    category: "Restaurants",
-    status: "Normal",
-  },
-  {
-    id: 3,
-    name: "Thilakawardane",
-    contactName: "Denula",
-    contactNumber: "011-2241122",
-    branches: "10",
-    category: "Clothing",
-    status: "Inactive",
-  },
-  {
-    id: 4,
-    name: "Fashion Bug",
-    contactName: "Wihanga",
-    contactNumber: "011-3341133",
-    branches: "4",
-    category: "Clothing",
-    status: "Normal",
-  },
-  {
-    id: 5,
-    name: "Buerger King",
-    contactName: "Saman",
-    contactNumber: "011-8841155",
-    branches: "3",
-    category: "Restaurants",
-    status: "Sponsored",
-  },
-];
-
 function getBadgeColor(status: string) {
   if (status === "Sponsored") {
     return "primary";
@@ -104,6 +116,16 @@ function getBadgeColor(status: string) {
     return "red";
   }
 }
+
+const page = ref(1);
+const pageCount = 5;
+
+const rows = computed(() => {
+  return stores.value.slice(
+    (page.value - 1) * pageCount,
+    page.value * pageCount
+  );
+});
 </script>
 
 <template>
@@ -149,7 +171,9 @@ function getBadgeColor(status: string) {
                   >
                     Total Stores
                   </h3>
-                  <span class="text-xl font-bold"> 10 </span>
+                  <span class="text-xl font-bold">{{
+                    counts.totalStores
+                  }}</span>
                 </div>
                 <div
                   class="flex flex-col items-center p-5 rounded-lg bg-gray-200/30 dark:bg-gray-900/30 border border-primary/10"
@@ -164,12 +188,14 @@ function getBadgeColor(status: string) {
                   >
                     Total Sponsored Store
                   </h3>
-                  <span class="text-xl font-bold"> 07 </span>
+                  <span class="text-xl font-bold">{{
+                    counts.totalSponsoredStores
+                  }}</span>
                 </div>
               </div>
             </div>
 
-            <UTable :columns="totalShopColumns" :rows="totalShopData">
+            <UTable :columns="totalShopColumns" :rows="rows">
               <template #name-data="{ row }">
                 <div class="flex flex-col">
                   <h3 class="text-lg font-semibold">{{ row.name }}</h3>
@@ -190,7 +216,7 @@ function getBadgeColor(status: string) {
               <template #actions-data="{ row }">
                 <div class="flex gap-3">
                   <UDropdown
-                    :items="productListAction"
+                    :items="productListAction(row)"
                     :ui="{
                       item: {
                         disabled: 'cursor-text select-text',
@@ -210,6 +236,15 @@ function getBadgeColor(status: string) {
                 </div>
               </template>
             </UTable>
+            <div
+              class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700"
+            >
+              <UPagination
+                v-model="page"
+                :page-count="pageCount"
+                :total="stores.length"
+              />
+            </div>
           </div>
         </UContent>
       </div>

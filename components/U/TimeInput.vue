@@ -50,7 +50,7 @@ watch(
       :ui="{ rounded: 'rounded-r-none' }"
       v-model="state.startTime"
     />
-    <div class="px-3 grid place-items-center bg-zinc-800">TO</div>
+    <div class="px-3 grid place-items-center bg-gray-300 dark:bg-zinc-800">TO</div>
     <UInput
       type="time"
       class="w-full"
