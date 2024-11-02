@@ -21,6 +21,9 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@iconify-json/ic": "^1.2.1",
+    "@iconify-json/material-symbols": "^1.2.6",
+    "@iconify-json/solar": "^1.2.1",
     "@nuxt/ui": "^2.18.7",
     "@pinia/nuxt": "^0.5.5"
   }

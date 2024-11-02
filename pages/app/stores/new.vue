@@ -1,13 +1,35 @@
 <script setup lang="ts">
-import { type Store as StoreFormType } from "~/types";
-import { storeValidation, sponsoredStoreValidation } from "~/schema";
+import {
+  type Store as StoreFormType,
+  type Branch as BranchFormType,
+} from "~/types";
+import {
+  storeValidation,
+  sponsoredStoreValidation,
+  BranchValidation,
+  type Branch,
+  type SponsoredStoreSchema,
+} from "~/schema";
+import type { FormSubmitEvent } from "#ui/types";
 
+interface BranchListItem extends Branch {
+  id: number;
+}
+
+const toast = useToast();
 const supabase = useSupabase();
-const sponsorshipPeriods = ["1 Month", "3 Months", "6 Month", "1 Year"];
+const sponsorshipPeriods = [
+  { value: 1, label: "1 Month" },
+  { value: 3, label: "3 Months" },
+  { value: 6, label: "6 Months" },
+  { value: 12, label: "1 Year" },
+];
+const branches = ref<BranchListItem[]>([]);
 
 const { data: categories } = await supabase.from("store_categories").select();
 categories?.push({ id: 999, name: "Other" });
 
+const isLoading = ref(false);
 const storeForm = ref<StoreFormType>({
   name: undefined,
   category: undefined,
@@ -18,59 +40,177 @@ const storeForm = ref<StoreFormType>({
   pricing: undefined,
 });
 
+const branchForm = ref<BranchFormType>({
+  location: undefined,
+  contactNumber: undefined,
+  openingHours: undefined,
+});
+
+const branchesTableAction = (row: BranchFormType) => [
+  [
+    {
+      label: "Delete",
+      icon: "i-heroicons-trash-20-solid",
+      click: () => removeBranch(row.id || 0),
+    },
+  ],
+];
+
 const branchesAddedColumns = [
   {
-    key: "id",
-    label: "#",
-  },
-  {
-    key: "location",
+    key: "location.name",
     label: "Location",
   },
   {
-    key: "contact",
+    key: "contactNumber",
     label: "Contact",
   },
   {
     key: "openingHours",
     label: "Opening Hours",
   },
-];
-
-const branchesAddedData = [
   {
-    id: 1,
-    contact: "011-1114445",
-    location: "Colombo",
-    openingHours: "08:00 - 17:00",
-  },
-  {
-    id: 2,
-    contact: "011-1114445",
-    location: "Gampaha",
-    openingHours: "09:00 - 18:00",
-  },
-  {
-    id: 3,
-    contact: "011-1114445",
-    location: "Ja-Ela",
-    openingHours: "24 Hours",
-  },
-  {
-    id: 4,
-    contact: "011-2223333",
-    location: "Kandy",
-    openingHours: "10:00 - 19:00",
-  },
-  {
-    id: 5,
-    contact: "011-3334444",
-    location: "Galle",
-    openingHours: "08:00 - 17:00",
+    key: "action",
+    icon: "material-symbols:help-outline-rounded",
   },
 ];
 
-async function saveStore() {}
+function onSubmit(event: FormSubmitEvent<SponsoredStoreSchema>) {
+  const form = event.data;
+
+  if (branches.value.length === 0) {
+    toast.add({
+      title: "Branches Are Empty",
+      description:
+        "You doesn't have added any branches to this store. it's mean this store is not visible publically through the app.",
+      color: "orange",
+      timeout: 0,
+      actions: [
+        {
+          variant: "solid",
+          color: "primary",
+          label: "Continue Without Branches",
+          click: () => saveStore(form),
+        },
+        { color: "gray", label: "Cancel" },
+      ],
+      ui: { description: "leading-6" },
+    });
+
+    return;
+  }
+
+  toast.add({
+    title: "Confirm Request",
+    description:
+      "Are you sure you want to save this store? Once you saved this store, it can publically accessible.",
+    color: "green",
+    timeout: 0,
+    actions: [
+      {
+        variant: "solid",
+        color: "green",
+        label: "Save Store",
+        click: () => saveStore(form),
+      },
+      { color: "gray", label: "Cancel" },
+    ],
+    ui: { description: "leading-6" },
+  });
+}
+
+async function saveStore(form: SponsoredStoreSchema) {
+  isLoading.value = true;
+  const { data: publishedStore } = await supabase
+    .from("stores")
+    .insert([
+      {
+        name: form.name,
+        category_id: form.category,
+        contact_name: form.contactName,
+        contact_number: form.contactNumber,
+      },
+    ])
+    .select()
+    .single();
+
+  if (publishedStore === null) {
+    toast.add({
+      title: "Failed to Save Store",
+      description: "Something went wrong while saving the store.",
+      color: "red",
+    });
+    isLoading.value = false;
+    return;
+  }
+
+  const storeId = publishedStore.id;
+  if (storeForm.value.isSponsored) {
+    await supabase.from("sponsored_stores").insert([
+      {
+        store_id: storeId,
+        price: Number(form.pricing),
+        ended_at: new Date(
+          new Date().setMonth(new Date().getMonth() + form.sponsorshipPeriod)
+        ).toISOString(),
+      },
+    ]);
+  }
+
+  if (branches.value.length <= 0) {
+    isLoading.value = false;
+    toast.add({
+      title: "Store Saved",
+      description: "Store saved successfully.",
+      color: "green",
+    });
+    return;
+  }
+
+  const branchesData = branches.value.map((branch) => ({
+    store_id: storeId,
+    city_id: branch.location.id,
+    contact_number: branch.contactNumber,
+    opening_hours: branch.openingHours,
+  }));
+
+  await supabase.from("branches").insert(branchesData);
+
+  toast.add({
+    title: "Store Saved",
+    description: "Store saved successfully.",
+    color: "green",
+  });
+  clearForm();
+  isLoading.value = false;
+}
+
+function addBranch(event: FormSubmitEvent<Branch>) {
+  const form = event.data;
+  branches.value.push({ id: Date.now(), ...form });
+}
+
+function removeBranch(id: number) {
+  branches.value = branches.value.filter((branch) => branch.id !== id);
+}
+
+function clearForm() {
+  storeForm.value = {
+    name: undefined,
+    category: undefined,
+    contactName: undefined,
+    contactNumber: undefined,
+    isSponsored: false,
+    sponsorshipPeriod: undefined,
+    pricing: undefined,
+  };
+  branchForm.value = {
+    location: undefined,
+    contactNumber: undefined,
+    openingHours: undefined,
+  };
+  branches.value = [];
+}
 
 async function getLocations(q: string) {
   const queries = makeQueries(q);
@@ -115,7 +255,12 @@ const storeSchema = computed(() =>
             </div>
           </div>
         </div>
-        <UForm :schema="storeSchema" :state="storeForm" class="mt-3">
+        <UForm
+          :schema="storeSchema"
+          :state="storeForm"
+          @submit="onSubmit"
+          class="mt-3"
+        >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="col-span-full grid lg:grid-cols-12 gap-3">
               <UFormGroup label="Store Name" name="name" class="lg:col-span-7">
@@ -184,6 +329,7 @@ const storeSchema = computed(() =>
                     placeholder="60 Days"
                     icon="material-symbols-light:calendar-clock"
                     v-model="storeForm.sponsorshipPeriod"
+                    value-attribute="value"
                   />
                 </UFormGroup>
 
@@ -213,42 +359,52 @@ const storeSchema = computed(() =>
               </div>
 
               <UDivider class="my-1" />
-
-              <UFormGroup label="Location" class="mt-6">
-                <USelectMenu
-                  :searchable="getLocations"
-                  by="id"
-                  option-attribute="name"
-                  placeholder="Location"
-                  :debounce="300"
-                  icon="icomoon-free:location"
-                />
-              </UFormGroup>
-
-              <UFormGroup label="Contact Number" class="mt-6">
-                <UInput
-                  placeholder="011- XXXXXXX"
-                  icon="material-symbols-light:phone-enabled-sharp"
-                />
-              </UFormGroup>
-
-              <UFormGroup
-                label="Opening Hours"
-                help="Use All 12:00 AM to Display 24 Hours Open"
-                class="mt-6"
+              <UForm
+                :state="branchForm"
+                :schema="BranchValidation"
+                @submit.prevent="addBranch"
+                class="grid gap-y-6"
               >
-                <UTimeInput />
-              </UFormGroup>
+                <UFormGroup label="Location" class="mt-3" name="location">
+                  <USelectMenu
+                    :searchable="getLocations"
+                    by="id"
+                    option-attribute="name"
+                    placeholder="Location"
+                    :debounce="300"
+                    icon="icomoon-free:location"
+                    v-model="branchForm.location"
+                  />
+                </UFormGroup>
 
-              <div class="flex justify-end mt-8 gap-3">
-                <UButton
-                  color="black"
-                  variant="solid"
-                  icon="material-symbols:arrow-right-alt-rounded"
-                  trailing
-                  >Add</UButton
+                <UFormGroup label="Contact Number" name="contactNumber">
+                  <UInput
+                    placeholder="011- XXXXXXX"
+                    icon="material-symbols-light:phone-enabled-sharp"
+                    v-model="branchForm.contactNumber"
+                  />
+                </UFormGroup>
+
+                <UFormGroup
+                  label="Opening Hours"
+                  help="Use 12:00 AM on both to Display 24 Hours Open"
+                  name="openingHours"
                 >
-              </div>
+                  <UTimeInput v-model="branchForm.openingHours" />
+                </UFormGroup>
+
+                <div class="flex justify-end mt-2 gap-3">
+                  <UButton
+                    color="black"
+                    type="submit"
+                    variant="solid"
+                    icon="material-symbols:arrow-right-alt-rounded"
+                    trailing
+                  >
+                    Add
+                  </UButton>
+                </div>
+              </UForm>
             </div>
 
             <div class="mt-4">
@@ -265,15 +421,35 @@ const storeSchema = computed(() =>
               <div
                 class="lg:h-[350px] bg-white dark:bg-zinc-900 border border-gray-300/70 dark:border-gray-700/60 rounded-lg mt-5 overflow-scroll"
               >
-                <UTable
-                  :columns="branchesAddedColumns"
-                  :rows="branchesAddedData"
-                />
+                <UTable :columns="branchesAddedColumns" :rows="branches">
+                  <template #action-header>
+                    <div class="flex items-center">
+                      <Icon name="material-symbols:help-outline-rounded" />
+                    </div>
+                  </template>
+                  <template #action-data="{ row }">
+                    <UDropdown
+                      :popper="{ arrow: true }"
+                      :items="branchesTableAction(row as BranchFormType)"
+                    >
+                      <UButton
+                        color="gray"
+                        variant="ghost"
+                        icon="i-heroicons-ellipsis-horizontal-20-solid"
+                      />
+                    </UDropdown>
+                  </template>
+                </UTable>
               </div>
 
               <div class="flex justify-end mt-8 gap-3">
-                <UButton color="gray">Clear</UButton>
-                <UButton icon="material-symbols:save-rounded" variant="solid">
+                <UButton color="gray" @click="clearForm">Clear</UButton>
+                <UButton
+                  icon="material-symbols:save-rounded"
+                  variant="solid"
+                  type="submit"
+                  :loading="isLoading"
+                >
                   Save This Store
                 </UButton>
               </div>

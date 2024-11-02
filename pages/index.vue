@@ -1,22 +1,62 @@
-<!-- <template>
-  <div>
-    <UContainer class="py-5">
-      <h1>Sign In</h1>
-      <p>Go to <UButton variant="link" label="Sign Up" to="/sign-up" /></p>
-      <p>Go to <UButton variant="link" label="Dashboard" to="/app/dashboard" /></p>
-    </UContainer>
-  </div>
-</template> -->
+<script setup lang="ts">
+import { signInValidation, type SignInValidationType } from "~/schema";
+import type { SignInType } from "~/types";
+import { type FormSubmitEvent } from "#ui/types";
 
-<script>
-export default {
-  data() {
-    return {
-      email: "",
-      password: "",
-    };
-  },
-};
+const supabase = useSupabase();
+const toast = useToast();
+const router = useRouter();
+
+const isLoading = ref(false);
+const form = ref<SignInType>({
+  email: undefined,
+  password: undefined,
+});
+
+async function signIn(event: FormSubmitEvent<SignInValidationType>) {
+  const data = event.data;
+
+  isLoading.value = true;
+  const { data: signInResponse, error } =
+    await supabase.auth.signInWithPassword(data);
+
+  if (error !== null) {
+    toast.add({
+      title: "Error",
+      description: error.message,
+      color: "red",
+    });
+    isLoading.value = false;
+    return;
+  }
+
+  if (signInResponse.user === null) {
+    toast.add({
+      title: "Error",
+      description: "Somthing went wrong",
+      color: "red",
+    });
+    isLoading.value = false;
+    return;
+  }
+
+  const unsavedUser = localStorage.getItem("profile_changes");
+  if (unsavedUser !== null) {
+    const user = JSON.parse(unsavedUser);
+    if (user.id === signInResponse.user.id) {
+      await supabase
+        .from("profile")
+        .update({
+          name: user.name,
+        })
+        .eq("id", user.id);
+      localStorage.removeItem("profile_changes");
+    }
+  }
+
+  isLoading.value = false;
+  router.push("/app/dashboard");
+}
 </script>
 
 <template>
@@ -29,20 +69,25 @@ export default {
       <div class="flex flex-col rounded-l-lg p-8">
         <h1 class="text-2xl font-bold uppercase text-center">Welcome Back</h1>
         <UDivider class="my-5" />
-        <UForm class="flex flex-col gap-4">
-          <UFormGroup label="Email Address">
+        <UForm
+          :state="form"
+          :schema="signInValidation"
+          class="flex flex-col gap-4"
+          @submit.prevent="signIn"
+        >
+          <UFormGroup label="Email Address" name="email">
             <UInput
               placeholder="Enter your email"
-              v-model="email"
+              v-model="form.email"
               type="email"
               required
             />
           </UFormGroup>
-          <UFormGroup label="Password">
+          <UFormGroup label="Password" name="password">
             <UInput
               label="Password"
               placeholder="Enter your password"
-              v-model="password"
+              v-model="form.password"
               type="password"
               required
             />
@@ -52,7 +97,8 @@ export default {
               label="Sign In"
               variant="solid"
               class="mt-5"
-              to="/app/dashboard"
+              type="submit"
+              :loading="isLoading"
               block
             />
           </div>

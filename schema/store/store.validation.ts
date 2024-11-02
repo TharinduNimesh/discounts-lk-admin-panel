@@ -6,8 +6,8 @@ export const storeValidation = z.object({
   contactName: z
     .string()
     .min(3, { message: "Contact name must be at least 3 characters" }),
-  contactNumber: z.string().regex(/^[0]{1}[7]{1}[01245678]{1}[0-9]{7}$/, {
-    message: "Invalid phone number",
+  contactNumber: z.string().regex(/^0(7[1-8]\d{7}|[1-9]\d{8})$/, {
+    message: "Invalid contact number",
   }),
 });
 
@@ -20,7 +20,7 @@ export type StoreSchema = z.infer<typeof storeValidation>;
 */
 
 export const sponsoredStoreValidation = storeValidation.extend({
-  sponsorshipPeriod: z.string(),
+  sponsorshipPeriod: z.number(),
   pricing: z.string().regex(/^\d{1,}$/, { message: "Invalid pricing" }),
 });
 

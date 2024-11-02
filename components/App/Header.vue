@@ -1,5 +1,7 @@
 <script setup lang="ts">
 const color = useColorMode();
+const supabase = useSupabase();
+const router = useRouter();
 const items = [
   [
     {
@@ -29,13 +31,18 @@ const items = [
     {
       label: "Sign out",
       icon: "i-heroicons-arrow-left-on-rectangle",
-      to: "/sign-in",
+      click: signOut,
     },
   ],
 ];
 
 function toggleTheme() {
   color.preference = color.preference === "light" ? "dark" : "light";
+}
+
+async function signOut() {
+ await supabase.auth.signOut();
+  router.push("/");
 }
 </script>
 

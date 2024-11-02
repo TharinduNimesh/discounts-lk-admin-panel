@@ -142,7 +142,6 @@ export type Database = {
           id: string
           name: string | null
           profile_image: string | null
-          role: Database["public"]["Enums"]["Role"]
         }
         Insert: {
           created_at?: string
@@ -150,7 +149,6 @@ export type Database = {
           id?: string
           name?: string | null
           profile_image?: string | null
-          role?: Database["public"]["Enums"]["Role"]
         }
         Update: {
           created_at?: string
@@ -158,7 +156,6 @@ export type Database = {
           id?: string
           name?: string | null
           profile_image?: string | null
-          role?: Database["public"]["Enums"]["Role"]
         }
         Relationships: []
       }
@@ -276,11 +273,44 @@ export type Database = {
           },
         ]
       }
+      user_role: {
+        Row: {
+          created_at: string
+          id: number
+          role: Database["public"]["Enums"]["Role"] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          role?: Database["public"]["Enums"]["Role"] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          role?: Database["public"]["Enums"]["Role"] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_role_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_user_exists: {
         Args: {
           email_input: string
