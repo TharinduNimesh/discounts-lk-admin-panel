@@ -1,11 +1,4 @@
 <script setup>
-useHead({
-  script: [
-    {
-      src: "/js/prism.js",
-    },
-  ],
-});
 import { useEditor, EditorContent } from "@tiptap/vue-3";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
@@ -26,6 +19,10 @@ const props = defineProps({
   modelValue: {
     type: String,
     default: "",
+  },
+  ableToGenerate: {
+    type: Boolean,
+    default: false,
   },
 });
 const editor = useEditor({
@@ -71,6 +68,12 @@ watch(
     emit("update:modelValue", value);
   }
 );
+
+watch(() => props.modelValue, (value) => {
+  if (value !== editor.value?.getHTML()) {
+    editor.value?.commands.setContent(value);
+  }
+});
 
 const headingIcon = computed(() => {
   if (editor.value?.isActive("heading", { level: 1 })) {
@@ -321,6 +324,26 @@ function chooseColor() {
         color="black"
         variant="ghost"
       />
+      <div class="flex flex-1 justify-end">
+        <UButton
+          id="generate-description-btn"
+          color="gray"
+          :ui="{
+            padding: { lg: 'px-2 py-0.5' },
+          }"
+          :disabled="!ableToGenerate"
+          @click="$emit('generate')"
+        >
+          <lord-icon
+            :colors="`primary:${$colorMode.value == 'dark' ? '#fff' : '#000'}`"
+            class="w-8 h-8"
+            :src="`/animated/pumpkin-${ableToGenerate ? 'pitch' : 'dead'}.json`"
+            target="#generate-description-btn"
+            trigger="hover"
+            stroke="bold"
+          />
+        </UButton>
+      </div>
       <input
         type="color"
         hidden

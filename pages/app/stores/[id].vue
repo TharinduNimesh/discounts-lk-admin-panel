@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const editable = ref(false);
 const isSponsored = ref(false);
 const sponsershipCategories = [
   "Grocery",
@@ -68,14 +69,20 @@ const branchesAddedData = [
         <div class="mt-3">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="col-span-full grid lg:grid-cols-12 gap-3">
-              <UFormGroup label="Store Name" class="lg:col-span-7">
+              <UFormGroup label="ID" class="lg:col-span-3">
+                <UInput
+                  placeholder="Store Id"
+                  icon="material-symbols-light:shopping-cart"
+                />
+              </UFormGroup>
+              <UFormGroup label="Store Name" class="lg:col-span-5">
                 <UInput
                   placeholder="Store Name"
                   icon="material-symbols-light:shopping-cart"
                 />
               </UFormGroup>
 
-              <UFormGroup label="Store Category" class="lg:col-span-5">
+              <UFormGroup label="Store Category" class="lg:col-span-4">
                 <USelectMenu
                   icon="material-symbols-light:list-alt-add-sharp"
                   v-model="sponsershipSelected"

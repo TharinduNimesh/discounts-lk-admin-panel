@@ -26,8 +26,10 @@ const sponsorshipPeriods = [
 ];
 const branches = ref<BranchListItem[]>([]);
 
-const { data: categories } = await supabase.from("store_categories").select();
-categories?.push({ id: 999, name: "Other" });
+const { data: categories } = await supabase
+  .from("store_categories")
+  .select()
+  .order("id", { ascending: true });
 
 const isLoading = ref(false);
 const storeForm = ref<StoreFormType>({

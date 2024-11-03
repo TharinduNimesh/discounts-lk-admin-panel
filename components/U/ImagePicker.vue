@@ -1,9 +1,44 @@
+<script setup lang="ts">
+const emit = defineEmits(["update:modelValue"]);
+defineProps({
+  modelValue: {
+    type: File,
+  },
+});
+
+const imageUrl = ref<string | null>(null);
+
+const onFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file) {
+    emit("update:modelValue", file);
+    imageUrl.value = URL.createObjectURL(file);
+  }
+};
+</script>
+
 <template>
   <div class="flex items-center justify-center w-full">
     <label
       for="dropzone-file"
-      class="flex flex-col items-center justify-center w-full h-72 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+      class="relative flex flex-col items-center justify-center w-full h-full min-h-72 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-800/80 overflow-hidden"
     >
+      <div v-if="imageUrl" class="absolute w-full h-full">
+        <div class="absolute top-2 right-2">
+          <UButton
+            color="gray"
+            icon="material-symbols:cancel"
+            class="rounded-full"
+            @click="imageUrl = null"
+          />
+        </div>
+        <img
+          :src="imageUrl"
+          alt="Selected Image"
+          class="w-full rounded-lg border border-gray-300"
+        />
+      </div>
       <div class="flex flex-col items-center justify-center pt-5 pb-6">
         <svg
           class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
@@ -27,7 +62,17 @@
           PNG, JPG, JPEG(MAX. 800x400px)
         </p>
       </div>
-      <input id="dropzone-file" type="file" class="hidden" accept=".png, .jpg, .jpeg"/>
+      <input
+        id="dropzone-file"
+        type="file"
+        class="hidden"
+        accept=".png, .jpg, .jpeg"
+        @change="onFileChange"
+      />
     </label>
   </div>
 </template>
+
+<style scoped>
+/* Add any additional styling here */
+</style>

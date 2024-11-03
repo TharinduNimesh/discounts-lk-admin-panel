@@ -1,12 +1,23 @@
+interface Branch {
+  id: number;
+  location: string;
+  opening_hours: string;
+}
+
+interface Store {
+  id: number;
+  name: string;
+}
+
 export interface DiscountForm {
-  image?: string;
+  image?: File;
   title?: string;
   description?: string;
   givenPrice?: number;
   price?: number;
   start_date?: string;
   end_date?: string;
-  storeName?: string;
-  selectedBranch?: never[];
+  store?: Store;
+  selectedBranch: Branch[];
   type?: string;
 }
