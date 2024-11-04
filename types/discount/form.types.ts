@@ -7,6 +7,7 @@ interface Branch {
 interface Store {
   id: number;
   name: string;
+  category_id: number;
 }
 
 export interface DiscountForm {
@@ -19,5 +20,5 @@ export interface DiscountForm {
   end_date?: string;
   store?: Store;
   selectedBranch: Branch[];
-  type?: string;
+  discountType?: string;
 }

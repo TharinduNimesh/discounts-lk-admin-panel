@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      available_branches: {
+        Row: {
+          branch_id: number
+          created_at: string
+          discount_id: number
+        }
+        Insert: {
+          branch_id: number
+          created_at?: string
+          discount_id: number
+        }
+        Update: {
+          branch_id?: number
+          created_at?: string
+          discount_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "available_branches_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "available_branches_discount_id_fkey"
+            columns: ["discount_id"]
+            isOneToOne: false
+            referencedRelation: "discounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           city_id: number
@@ -65,6 +98,35 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      discount_images: {
+        Row: {
+          created_at: string
+          discount_id: number
+          id: number
+          path: string
+        }
+        Insert: {
+          created_at?: string
+          discount_id: number
+          id?: number
+          path: string
+        }
+        Update: {
+          created_at?: string
+          discount_id?: number
+          id?: number
+          path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_images_discount_id_fkey"
+            columns: ["discount_id"]
+            isOneToOne: false
+            referencedRelation: "discounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       discounts: {
         Row: {
