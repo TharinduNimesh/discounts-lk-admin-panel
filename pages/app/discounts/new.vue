@@ -16,6 +16,7 @@ interface AIResponse {
 
 const isLoading = ref(false);
 const isTitleGenerating = ref(false);
+const isDescriptionGenerating = ref(false);
 const isBranchesLoading = ref(false);
 
 const toast = useToast();
@@ -115,7 +116,7 @@ async function generateTitle() {
 }
 
 async function generateDescription() {
-  isTitleGenerating.value = true;
+  isDescriptionGenerating.value = true;
   try {
     const data = await $fetch<AIResponse>(
       `${config.public.edgeUrl}/api/AI/generate-description`,
@@ -135,17 +136,15 @@ async function generateDescription() {
       }
     );
 
-    console.log(data);
     form.value.description = data.output;
   } catch (error) {
-    console.log(error);
     toast.add({
       title: "Error",
       description: "Failed to generate title",
       color: "red",
     });
   } finally {
-    isTitleGenerating.value = false;
+    isDescriptionGenerating.value = false;
   }
 }
 
@@ -195,6 +194,7 @@ async function createDiscount(form: DiscountValidationSchema) {
         description: markdown,
         price: form.price,
         created_at: form.start_date,
+        started_at: form.start_date,
         ended_at: form.end_date,
         discount_type: "Normal",
         category_id: form.store.category_id,
@@ -399,6 +399,7 @@ async function uploadImage(
                   v-model="form.description"
                   :able-to-generate="ableToGenerateDescription"
                   @generate="generateDescription"
+                  :is-generating="isDescriptionGenerating"
                 />
               </UFormGroup>
             </div>

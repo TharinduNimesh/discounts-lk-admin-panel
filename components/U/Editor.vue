@@ -20,6 +20,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  isGenerating: {
+    type: Boolean,
+    default: false,
+  },
   ableToGenerate: {
     type: Boolean,
     default: false,
@@ -331,7 +335,7 @@ function chooseColor() {
           :ui="{
             padding: { lg: 'px-2 py-0.5' },
           }"
-          :disabled="!ableToGenerate"
+          :disabled="!ableToGenerate || isGenerating"
           @click="$emit('generate')"
         >
           <lord-icon
@@ -352,7 +356,7 @@ function chooseColor() {
         @change="editor.chain().focus().setColor($event.target.value).run()"
       />
     </div>
-    <EditorContent :editor="editor" />
+    <EditorContent :editor="editor"  />
   </div>
 </template>
 

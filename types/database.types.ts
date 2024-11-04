@@ -130,7 +130,7 @@ export type Database = {
       }
       discounts: {
         Row: {
-          category_id: number | null
+          category_id: number
           created_at: string
           description: string
           discount_type: Database["public"]["Enums"]["DiscountType"]
@@ -142,12 +142,13 @@ export type Database = {
           price: number
           rating: number | null
           rating_count: number | null
+          started_at: string
           store_id: number
           title: string
           views: number | null
         }
         Insert: {
-          category_id?: number | null
+          category_id: number
           created_at?: string
           description: string
           discount_type?: Database["public"]["Enums"]["DiscountType"]
@@ -159,12 +160,13 @@ export type Database = {
           price: number
           rating?: number | null
           rating_count?: number | null
+          started_at: string
           store_id: number
           title: string
           views?: number | null
         }
         Update: {
-          category_id?: number | null
+          category_id?: number
           created_at?: string
           description?: string
           discount_type?: Database["public"]["Enums"]["DiscountType"]
@@ -176,6 +178,7 @@ export type Database = {
           price?: number
           rating?: number | null
           rating_count?: number | null
+          started_at?: string
           store_id?: number
           title?: string
           views?: number | null
